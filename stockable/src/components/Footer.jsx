@@ -5,7 +5,7 @@ import logo from '../assets/Stockable_logo.png';  // Importing the logo image
 
 const Footer = () => {
   return (
-    <footer className="bg-white text-black p-6 border-2=">
+    <footer className="bg-white text-black p-6 space-y-0">
       <div className="container mx-auto flex flex-col items-center">
         <img src={logo} alt="" className='h-20'/>
 
