@@ -19,6 +19,10 @@ userSchema.pre('save', async function(next) {
   next();
 });
 
+UserSchema.methods.comparePassword = async function(enteredPassword) {
+  return bcrypt.compare(enteredPassword, this.password);
+};
+
 // Specify the collection name
 const User = mongoose.model('User', userSchema, 'Users');  // Explicitly set the collection name to 'Users'
 module.exports = User;
