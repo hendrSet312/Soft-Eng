@@ -1,4 +1,5 @@
 const express = require('express');
+const session = require('express-session');
 const User = require('../models/User');  // Require User model
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -20,37 +21,39 @@ router.post('/signup', async (req, res) => {
     const newUser = new User({ firstName, lastName, email, phoneNumber, password });
     await newUser.save();
 
-    res.status(201).json({ message: 'User created successfully' });
+    return res.status(201).json({ message: 'User created successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
+    return res.status(500).json({ message: 'Server error', error });
   }
 });
 
 // login
-router.post('/login', async (req,res) => {
-  const {email, password} = req.body;
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
 
-  try{
-      const existingUser = await User.findOne({ email });
+  try {
+    const existingUser = await User.findOne({ email });
 
-      if(existingUser){
-          const isPasswordValid = await User.comparePassword(password);
-          if (!isPasswordValid) {
-              return res.status(400).json({ message: 'password' });
-          }
-
-          req.session.userId = User._id;
-          const token = jwt.sign({id:User._id},'secret-key',{expiresIn:'1h'});
-          res.status(201).json({message : 'Login success', token });
-
-      }else{
-          return res.status(404).json({message : 'Invalid email'});
+    if (existingUser) {
+      const isPasswordValid = await bcrypt.compare(password, existingUser.password);
+      if (!isPasswordValid) {
+        return res.status(400).json({ message: 'password' });
       }
 
-  }catch(error){
-       res.status(500).json({ message: 'Server error' });
+      req.session.userId = existingUser._id;
+      const token = jwt.sign({ id: existingUser._id }, 'secret-key', { expiresIn: '1h' });
+      return res.status(201).json({ message: 'Login success', token });
+
+    } else {
+      return res.status(404).json({ message: 'Invalid email' });
+    }
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 router.post('/logout', (req,res) => {
   req.session.destroy( err => {
@@ -58,7 +61,7 @@ router.post('/logout', (req,res) => {
       return res.status(500).json({message : 'Logout failed'});
     }
     res.clearCookie('connect.sid');
-    res.json({message : 'logout success'});
+    return res.status(201).json({message : 'logout success'});
   });
 });
 
