@@ -10,3 +10,5 @@ const HeaderLogSign = () => {
         </header>
     );
 }
+
+export default HeaderLogSign;
