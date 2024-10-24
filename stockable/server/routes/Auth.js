@@ -9,14 +9,12 @@ const router = express.Router();
 // Sign-up Route
 router.post('/signup', async (req, res) => {
   const { firstName, lastName, email, phoneNumber, password } = req.body;
-
   try {
     // Check if the user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
-
     // Create a new user
     const newUser = new User({ firstName, lastName, email, phoneNumber, password });
     await newUser.save();
@@ -30,25 +28,27 @@ router.post('/signup', async (req, res) => {
 // login
 router.post('/login', async (req, res) => {
   console.log('Login request received:', req.body);
-  const { email, password } = req.body;
+  let { email, password } = req.body;
+
+  email = email.trim().toLowerCase();
 
   try {
     const existingUser = await User.findOne({ email });
 
-    if (existingUser) {
-      const isPasswordValid = await bcrypt.compare(password, existingUser.password);
-      if (!isPasswordValid) {
-        return res.status(400).json({ message: 'password' });
-      }
-
-      req.session.userId = existingUser._id;
-      const token = jwt.sign({ id: existingUser._id }, 'secret-key', { expiresIn: '1h' });
-      return res.status(201).json({ message: 'Login success', token });
-
-    } else {
-      return res.status(404).json({ message: 'Invalid NGAWI' });
+    if(!existingUser){
+      return res.status(404).json({ message: 'User not found' });
     }
 
+    const isPasswordValid = await bcrypt.compare(password, existingUser.password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: 'password' });
+    }
+
+    req.session.userId = existingUser._id;
+    const token = jwt.sign({ id: existingUser._id }, 'secret-key', { expiresIn: '1h' });
+    return res.status(201).json({ message: 'Login success', token });
+
+    
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Server error' });
