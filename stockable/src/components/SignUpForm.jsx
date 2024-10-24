@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import HeaderLogSign from './HeaderLogSign';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const SignUpForm = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +11,8 @@ const SignUpForm = () => {
     password: ''
   });
 
+  const navigate = useNavigate(); // Initialize useNavigate
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -20,6 +22,9 @@ const SignUpForm = () => {
     try {
       const response = await axios.post('http://localhost:5000/api/signup', formData);
       console.log('User signed up successfully:', response.data);
+      
+      // Navigate to dashboard after successful signup
+      navigate('/');  // Adjust the path as needed to match your dashboard route
     } catch (error) {
       console.error('Error signing up the user:', error);
     }
@@ -27,7 +32,6 @@ const SignUpForm = () => {
 
   return (
     <div>
-      <HeaderLogSign />
       <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold mb-6 text-center">Sign up now</h2>
         <form onSubmit={handleSubmit}>

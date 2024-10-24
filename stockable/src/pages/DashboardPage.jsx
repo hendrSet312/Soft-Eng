@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import StockCard from '../components/StockCard';
-import NewsCard from '../components/NewsCard';
 import { fetchStockData, fetchNewsData } from '../utils/api';
-import Header from './components/Header';
-import Footer from './components/Footer';
+
+import {StockCard, NewsCard, Header, Footer} from '../components';
 
 const DashboardPage = () => {
   const [stocks, setStocks] = useState([]);
