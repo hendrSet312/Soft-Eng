@@ -2,8 +2,8 @@ const express = require('express');
 const session = require('express-session');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const authRoutes = require('./routes/Auth');  // Require Auth.js (No .js extension needed)
-require('dotenv').config();  // Load environment variables from .env
+const authRoutes = require('./routes/Auth');  
+require('dotenv').config();  
 
 const app = express();
 

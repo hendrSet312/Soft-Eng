@@ -29,6 +29,7 @@ router.post('/signup', async (req, res) => {
 
 // login
 router.post('/login', async (req, res) => {
+  console.log('Login request received:', req.body);
   const { email, password } = req.body;
 
   try {
@@ -45,7 +46,7 @@ router.post('/login', async (req, res) => {
       return res.status(201).json({ message: 'Login success', token });
 
     } else {
-      return res.status(404).json({ message: 'Invalid email' });
+      return res.status(404).json({ message: 'Invalid NGAWI' });
     }
 
   } catch (error) {
