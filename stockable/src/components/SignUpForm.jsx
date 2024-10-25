@@ -24,7 +24,7 @@ const SignUpForm = () => {
       console.log('User signed up successfully:', response.data);
       
       // Navigate to dashboard after successful signup
-      navigate('/');  // Adjust the path as needed to match your dashboard route
+      navigate('/login');  // ke login page setelah berhasil signup
     } catch (error) {
       console.error('Error signing up the user:', error);
     }

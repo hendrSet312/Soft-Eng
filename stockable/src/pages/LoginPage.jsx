@@ -5,7 +5,7 @@ import { HeaderLogSign } from '../components';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
-    emailOrPhone: '',
+    email: '',
     password: ''
   });
 
@@ -38,9 +38,9 @@ const LoginPage = () => {
             <input
               className="w-full border border-gray-300 p-2 rounded-lg"
               type="text"
-              name="emailOrPhone"
-              placeholder="Email or mobile phone number"
-              value={formData.emailOrPhone}
+              name="email" //samain kayak diatas (email)
+              placeholder="Email"
+              value={formData.email}
               onChange={handleChange}
               required
             />
