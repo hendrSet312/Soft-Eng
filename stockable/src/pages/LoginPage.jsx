@@ -19,10 +19,12 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:5000/api/login', formData);
-      console.log('Login successful:', response.data);
-
-      // Navigate to dashboard after successful login
-      navigate('/');
+      if(response.data.token){
+        localStorage.setItem('token',response.data.token);
+        navigate('/');
+      }else{
+        console.error('login failed', response.data.message);
+      }
     } catch (error) {
       console.error('Error logging in:', error);
     }

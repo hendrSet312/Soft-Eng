@@ -3,6 +3,7 @@ const session = require('express-session');
 const User = require('../models/User');  // Require User model
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 const router = express.Router();
 
@@ -44,9 +45,18 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'password' });
     }
 
-    req.session.userId = existingUser._id;
-    const token = jwt.sign({ id: existingUser._id }, 'secret-key', { expiresIn: '1h' });
-    return res.status(201).json({ message: 'Login success', token });
+    const user_info = { id: existingUser._id, email: existingUser.email }
+
+    const token = jwt.sign(
+      user_info,
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }  // Token valid for 1 hour
+    );
+
+    return res.status(201).json({
+      message : 'User login',
+      token : token
+    });
 
     
   } catch (error) {
@@ -65,5 +75,7 @@ router.post('/logout', (req,res) => {
     return res.status(201).json({message : 'logout success'});
   });
 });
+
+
 
 module.exports = router;  // Export the router for use in server.js
