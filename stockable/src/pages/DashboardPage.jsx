@@ -40,7 +40,7 @@ const DashboardPage = () => {
       <Header />
       <div className="container mx-auto md:p-6 xl:px-0 xl:pt-0">
         <section className="welcome text-center mb-12 bg-slate-400 p-6">
-          <h2 className="text-4xl font-bold mb-4">Welcome, {userData.firstName}</h2>
+          <h2 className="text-4xl font-bold mb-4">Welcome, {userData.firstName ? userData.firstName : "Pencari Cuan!"}</h2>
           <p className="text-lg text-gray-600">Gather Stock Information Here</p>
         </section>
 
