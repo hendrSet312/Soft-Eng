@@ -1,16 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import StockCard from '../components/StockCard';
-import NewsCard from '../components/NewsCard';
 import { fetchStockData, fetchNewsData } from '../utils/api';
-import Header from './components/Header';
-import Footer from './components/Footer';
+import axios from 'axios';
+import {StockCard, NewsCard, Header, Footer} from '../components';
 
 const DashboardPage = () => {
   const [stocks, setStocks] = useState([]);
   const [news, setNews] = useState([]);
+  const [userData, setUserData] = useState({id:'',firstName: '',lastName: '', email: '' });
+
 
   useEffect(() => {
     // Fetch stocks and news when component mounts
+    const fetchDashboardData = async () => {
+      try {
+        
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`http://localhost:5000/dashboard/dashboard`, {
+          headers: { Authorization: `Bearer ${token}`}
+        });
+
+        setUserData({
+          id : response.data.id,
+          firstName: response.data.firstName,
+          lastName: response.data.lastName,
+          email: response.data.email
+        });
+      }catch(error){
+        console.error('Error fetching dashboard data:', error);
+      }
+    };
+
+    fetchDashboardData();
     fetchStockData().then(setStocks);
     fetchNewsData().then(setNews);
   }, []);
@@ -20,7 +40,7 @@ const DashboardPage = () => {
       <Header />
       <div className="container mx-auto md:p-6 xl:px-0 xl:pt-0">
         <section className="welcome text-center mb-12 bg-slate-400 p-6">
-          <h2 className="text-4xl font-bold mb-4">Welcome, {`{name}`}</h2>
+          <h2 className="text-4xl font-bold mb-4">Welcome, {userData.firstName ? userData.firstName : "Pencari Cuan!"}</h2>
           <p className="text-lg text-gray-600">Gather Stock Information Here</p>
         </section>
 
