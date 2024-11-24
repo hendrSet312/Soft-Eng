@@ -18,6 +18,7 @@ const DashboardPage = () => {
         const response = await axios.get(`http://localhost:5000/dashboard/dashboard`, {
           headers: { Authorization: `Bearer ${token}`}
         });
+        
 
         setUserData({
           id : response.data.id,
@@ -31,7 +32,8 @@ const DashboardPage = () => {
     };
 
     fetchDashboardData();
-    fetchStockData().then(setStocks);
+
+    fetchStockData().then(setStocks); // setstocks berisi data dari fetchStockData
     fetchNewsData().then(setNews);
   }, []);
 
@@ -51,8 +53,9 @@ const DashboardPage = () => {
               <StockCard
                 key={stock.symbol}
                 name={stock.name}
-                sentiment={stock.sentiment}
+                // sentiment={stock.sentiment}
                 price={stock.price}
+                change={stock.change}
               />
             ))}
           </div>
