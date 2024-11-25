@@ -8,7 +8,7 @@ const StockCard = ({ name, sentiment, price, change }) => {
         {sentiment > 0.5 ? 'Positive' : 'Negative'}: {sentiment}
       </p>
       <p className="text-gray-600">Price: ${price}</p>
-      <p className={`mb-1 text-${change > 0 ? 'green' : 'red'}-500`}>Change: ${change}</p>
+      <p className={`mb-1 text-${change > 0 ? 'green' : 'red'}-500`}>Change: %{change}</p>
     </div>
   );
 };
