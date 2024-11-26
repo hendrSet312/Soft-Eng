@@ -31,10 +31,36 @@ const DashboardPage = () => {
       }
     };
 
-    fetchDashboardData();
+    const fetchNewsDashboard = async () => {
+      const currentDate = new Date().toISOString().split('T')[0];
+      const company = ['AAPL'];
 
-    fetchStockData().then(setStocks); // setstocks berisi data dari fetchStockData
-    fetchNewsData().then(setNews);
+      try{
+        const news_data = await Promise.all(
+          company.map(symbol => fetchNewsData(symbol))
+        );
+        setNews( news_data.flat());
+      }catch(error){
+        console.error('Error fetching dashboard news:', error);
+      }
+    }
+
+    const fetchStockDashboard = async () => {
+      try{
+        const currentDate = new Date().toISOString().split('T')[0];
+        const company = ['AAPL'];
+        const stockData = await Promise.all(
+          company.map(symbol => fetchStockData(symbol))
+        );
+        setStocks(stockData);
+      }catch(error){
+        console.error('Error fetching dashboard news:', error);
+      }
+    }
+
+    fetchNewsDashboard();
+    fetchDashboardData();
+    fetchStockDashboard(); // setstocks berisi data dari fetchStockData
   }, []);
 
   return (
@@ -49,27 +75,27 @@ const DashboardPage = () => {
         <section className="stock-sentiments mb-12 px-10">
           <h2 className="text-2xl font-semibold mb-6">Stock Sentiments</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stocks.map(stock => (
+            {stocks.map((stock,index) => (
               <StockCard
-                key={stock.symbol}
+                key={index} // Ensures unique keys for each stock
                 name={stock.name}
-                // sentiment={stock.sentiment}
                 price={stock.price}
-                change={stock.change}
+                change={stock.changesPercentage}
               />
-            ))}
+          ))}
           </div>
         </section>
 
         <section className="news px-10">
           <h2 className="text-2xl font-semibold mb-6">Related News</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {news.map(newsItem => (
+            {news.map((newsItem,index) => (
               <NewsCard
-                key={newsItem.id}
-                image={newsItem.image}
+                key={index}
+                image={newsItem.urlToImage}
                 title={newsItem.title}
-                description={newsItem.description}
+                stockSymbol={newsItem.symbol}
+                date = {newsItem.publishedAt}
               />
             ))}
           </div>

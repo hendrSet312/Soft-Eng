@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const authRoutes = require('./routes/Auth'); 
 const dashboardRoutes = require('./routes/dashboard');
+
 require('dotenv').config();  
 
 const app = express();
