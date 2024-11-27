@@ -1,9 +1,6 @@
 import axios from 'axios';
-
-const parse_date = (date) => {
-  let result = date.replace('Z','').split('T').join(' ');
-  return result;
-}
+import { unix_to_date } from '../../server/misc/date_operation';
+import img_template from '../../src/assets/template_img.news.jpg';
 
 export const fetchStockData = async (symbol) => {
   try {
@@ -33,20 +30,19 @@ export const fetchStockData = async (symbol) => {
 };
 
 
-export const fetchNewsData = async (symbol, date) => {
+export const fetchNewsData = async (symbol,date_start,date_end) => {
   try {
-    // Placeholder: Replace with your actual news API integration
-    const url = `https://newsapi.org/v2/everything?q=${symbol}&from${date}&sortBy=popularity&apiKey=945843d7f3e347669afa29bf1416cecd`;
+    const url = `https://finnhub.io/api/v1/company-news?symbol=${symbol}&from=${date_start}&to=${date_end}&token=ct3hrehr01qrd05j3q70ct3hrehr01qrd05j3q7g`;
     let res = await axios.get(url);
-    res = res.data.articles.filter(art => art.urlToImage !== null).splice(0,2);
+    res = res.data.splice(0,5);
 
-    return res.map(({ title, urlToImage, publishedAt}) => ({
-      title: title,
+    return res.map(({id,headline, image, datetime}) => ({
+      id : id,
+      title: headline,
       symbol: symbol,
-      urlToImage: urlToImage,
-      publishedAt: parse_date(publishedAt),
+      image: image.length > 1 ? image : img_template,
+      datetime: unix_to_date(datetime),
     }));
-
   } catch (error) {
     console.error('Error fetching news data:', error);
     return []; // Return an empty array on error

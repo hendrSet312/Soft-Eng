@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { fetchStockData, fetchNewsData } from '../utils/api';
-import axios from 'axios';
+import {fetchNewsData,fetchStockData} from '../utils/api';
+import {getDateSevenDaysAgo,getCurrentDate} from '../../server/misc/date_operation'
 import {StockCard, NewsCard, Header, Footer} from '../components';
+import axios from 'axios';
+import { parse_date } from '../../server/misc/date_operation';
+import { fetch_stocks_database, fetch_news_database } from '../../server/database/get_public_data';
+
 
 const DashboardPage = () => {
   const [stocks, setStocks] = useState([]);
@@ -13,7 +17,6 @@ const DashboardPage = () => {
     // Fetch stocks and news when component mounts
     const fetchDashboardData = async () => {
       try {
-        
         const token = localStorage.getItem('token');
         const response = await axios.get(`http://localhost:5000/dashboard/dashboard`, {
           headers: { Authorization: `Bearer ${token}`}
@@ -31,15 +34,34 @@ const DashboardPage = () => {
       }
     };
 
-    const fetchNewsDashboard = async () => {
-      const currentDate = new Date().toISOString().split('T')[0];
-      const company = ['AAPL'];
-
+    const fetchNewsDashboard = async () => {      
       try{
-        const news_data = await Promise.all(
-          company.map(symbol => fetchNewsData(symbol))
-        );
-        setNews( news_data.flat());
+        const currentDate = getCurrentDate();
+        const lastweekDate  = getDateSevenDaysAgo();
+        let news_response = await fetch_news_database(lastweekDate);
+
+        if(news_response.length === 0){
+          const stocks_li = await fetch_stocks_database();
+        
+          const news_data = await Promise.all(
+            stocks_li.map(({stock_symbol}) => fetchNewsData(stock_symbol,lastweekDate,currentDate))
+          );
+
+          for(const {id,title, symbol, image, datetime} of news_data.flat()){
+            const id_comp = stocks_li.find(company => symbol === company.stock_symbol).stock_id;
+
+            const res = await axios.post('http://localhost:5000/database/news_stock', {
+              id_news : id,
+              id_company :id_comp, 
+              title : title, 
+              published_date : datetime, 
+              image_link : image
+            });
+          }
+          news_response = await fetch_news_database(currentDate);
+        }
+
+        setNews(news_response.flat());
       }catch(error){
         console.error('Error fetching dashboard news:', error);
       }
@@ -47,11 +69,12 @@ const DashboardPage = () => {
 
     const fetchStockDashboard = async () => {
       try{
-        const currentDate = new Date().toISOString().split('T')[0];
-        const company = ['AAPL'];
+        const stocks_li = await fetch_stocks_database();
+
         const stockData = await Promise.all(
-          company.map(symbol => fetchStockData(symbol))
+          stocks_li.map(({stock_symbol}) => fetchStockData(stock_symbol))
         );
+
         setStocks(stockData);
       }catch(error){
         console.error('Error fetching dashboard news:', error);
@@ -92,10 +115,10 @@ const DashboardPage = () => {
             {news.map((newsItem,index) => (
               <NewsCard
                 key={index}
-                image={newsItem.urlToImage}
+                image={newsItem.image_link}
                 title={newsItem.title}
-                stockSymbol={newsItem.symbol}
-                date = {newsItem.publishedAt}
+                stockSymbol={newsItem.stock_symbol}
+                date = {parse_date(newsItem.published_date)}
               />
             ))}
           </div>
