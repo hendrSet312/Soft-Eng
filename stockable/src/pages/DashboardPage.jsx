@@ -104,6 +104,8 @@ const DashboardPage = () => {
                 name={stock.name}
                 price={stock.price}
                 change={stock.changesPercentage}
+                /* Symbol buat stockcard cuy, gatau gmn*/
+                symbol={stock.symbol} // Pass symbol to StockCard
               />
           ))}
           </div>
