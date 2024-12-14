@@ -1,16 +1,18 @@
-export function getDateSevenDaysAgo() {
+function getDateSevenDaysAgo() {
     const now = new Date();
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // Subtract 7 days in milliseconds
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); 
     return sevenDaysAgo.toISOString().split('T')[0];
 }
-
   
-export function getCurrentDate() {
-    const now = new Date();
-    return new Date().toISOString().split('T')[0];
+function getCurrentDate(time = false) {
+    const now = new Date().toISOString();
+    if(time){
+        return now;
+    }
+    return now.split('T')[0];
 }
 
-export const parse_date = (date) => {
+const parse_date = (date) => {
     const parsedDate = new Date(date);
     return parsedDate.toLocaleString('default', {
         weekday: 'long',
@@ -22,7 +24,10 @@ export const parse_date = (date) => {
     });
 }
 
-export function unix_to_date(timestamp){
+function unix_to_date(timestamp){
     const date = new Date(timestamp * 1000);
     return date.toISOString().split('T')[0];
 }
+
+
+export { getDateSevenDaysAgo, getCurrentDate , unix_to_date, parse_date};

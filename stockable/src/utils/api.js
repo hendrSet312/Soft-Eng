@@ -36,15 +36,17 @@ export const fetchNewsData = async (symbol,date_start,date_end) => {
     let res = await axios.get(url);
     res = res.data.splice(0,5);
 
-    return res.map(({id,headline, image, datetime}) => ({
+    return res.map(({id,headline, image, datetime, url}) => ({
       id : id,
       title: headline,
       symbol: symbol,
       image: image.length > 1 ? image : img_template,
       datetime: unix_to_date(datetime),
+      url : url,
     }));
   } catch (error) {
     console.error('Error fetching news data:', error);
     return []; // Return an empty array on error
   }
 };
+

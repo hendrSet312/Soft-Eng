@@ -5,7 +5,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/Auth'); 
 const dashboardRoutes = require('./routes/dashboard');
 const databaseRoutes = require('./database/database_operation');
-
+const timeseriesRoutes = require('./../server/models/time_series_data');
 
 require('dotenv').config();  
 
@@ -32,6 +32,7 @@ mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
 app.use('/api', authRoutes);
 app.use('/dashboard',dashboardRoutes);
 app.use('/database',databaseRoutes);
+app.use('/timeseries-data',timeseriesRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

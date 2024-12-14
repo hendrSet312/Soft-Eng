@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {fetchNewsData,fetchStockData} from '../utils/api';
-import {getDateSevenDaysAgo,getCurrentDate} from '../../server/misc/date_operation'
+import {getDateSevenDaysAgo,getCurrentDate} from '../../server/misc/date_operation';
 import {StockCard, NewsCard, Header, Footer} from '../components';
 import axios from 'axios';
 import { parse_date } from '../../server/misc/date_operation';
@@ -47,7 +47,7 @@ const DashboardPage = () => {
             stocks_li.map(({stock_symbol}) => fetchNewsData(stock_symbol,lastweekDate,currentDate))
           );
 
-          for(const {id,title, symbol, image, datetime} of news_data.flat()){
+          for(const {id,title, symbol, image, datetime,url} of news_data.flat()){
             const id_comp = stocks_li.find(company => symbol === company.stock_symbol).stock_id;
 
             const res = await axios.post('http://localhost:5000/database/news_stock', {
@@ -55,7 +55,8 @@ const DashboardPage = () => {
               id_company :id_comp, 
               title : title, 
               published_date : datetime, 
-              image_link : image
+              image_link : image,
+              url : url
             });
           }
           news_response = await fetch_news_database(currentDate);
@@ -117,6 +118,7 @@ const DashboardPage = () => {
             {news.map((newsItem,index) => (
               <NewsCard
                 key={index}
+                url={newsItem.url}
                 image={newsItem.image_link}
                 title={newsItem.title}
                 stockSymbol={newsItem.stock_symbol}
