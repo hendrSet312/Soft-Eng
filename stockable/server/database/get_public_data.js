@@ -19,3 +19,4 @@ export async function fetch_news_database(date, id_comp = null) {
     const response = await axios.get(responseStr);
     return response.data;
 }
+
