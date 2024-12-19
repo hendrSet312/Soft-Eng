@@ -47,7 +47,7 @@ router.get('/news_stock/:date', async (req, res) => {
             return res.status(400).send('Date is required !');
         }
 
-        let query = `SELECT ns.title,ns.published_date,ns.image_link,s.stock_symbol
+        let query = `SELECT ns.title,ns.published_date,ns.image_link,ns.url,s.stock_symbol
                      FROM public.news_stock AS ns
                      JOIN public.stock s ON s.stock_id = ns.stock_id
                      WHERE ns.published_date >= $1`;
@@ -69,19 +69,19 @@ router.get('/news_stock/:date', async (req, res) => {
 
 router.post('/news_stock', async (req, res) => {
     try {
-        const {id_news,id_company, title, published_date, image_link } = req.body;
+        const {id_news,id_company, title, published_date, image_link, url } = req.body;
 
         if (!id_news || !id_company || !title || !published_date || !image_link) {
-            return res.status(400).send('All fields are required: id_news ,id_company, title, publisher, published_date, image_link.');
+            return res.status(400).send('All fields are required: id_news ,id_company, title, publisher, published_date, image_link, url.');
         }
 
         const query = `
-            INSERT INTO public.news_stock (id_news,stock_id, title, published_date, image_link)
-            VALUES ($1, $2, $3, $4, $5)
+            INSERT INTO public.news_stock (id_news,stock_id, title, published_date, image_link, url)
+            VALUES ($1, $2, $3, $4, $5, $6)
             ON CONFLICT DO NOTHING;
         `;
 
-        const values = [id_news,id_company, title, published_date, image_link];
+        const values = [id_news,id_company, title, published_date, image_link, url];
 
         const result = await client_postgre.query(query, values);
 
