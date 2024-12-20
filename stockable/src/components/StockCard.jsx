@@ -19,8 +19,8 @@ const StockCard = ({ name, sentiment, price, change, symbol }) => {
       className="block border rounded-lg p-4 shadow-md bg-white hover:shadow-lg transition-shadow"
     >
       <h3 className="text-lg font-bold mb-2">{name}</h3>
-      <p className={`mb-1 text-${sentiment > 0 ? 'green' : 'red'}-500`}>
-        Sentiment: {sentiment > 0.5 ? 'Positive' : 'Negative'}: {sentiment}
+      <p className={`mb-1 text-${sentiment == 'positive' ? 'green' : sentiment == 'neutral' ? 'grey' : 'red'}-500`}>
+        {sentiment}
       </p>
       <p className="text-gray-600">Price: ${price}</p>
       <p
