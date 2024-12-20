@@ -90,8 +90,6 @@ const prepareCandlestickChartData = async (symbol, stockInfo, range_date) => {
         filteredData = timeseries_data;
     }
 
-    console.log(filteredData);
-
     const dates = filteredData.map(entry => new Date(entry.date));
     const open = filteredData.map(entry => entry.open);
     const high = filteredData.map(entry => entry.high);
@@ -117,6 +115,19 @@ const prepareCandlestickChartData = async (symbol, stockInfo, range_date) => {
   }
 };
 
+const preparePieData = async (symbol) => {
+  let response = await axios.get(`http://localhost:5000/database/sentiment_count?stock_symbol=${symbol}`);
+  response = response.data;
+
+  var data = [{
+    values: response.map(sen => sen.count),
+    labels: response.map(sen => sen.sentiment),
+    type: 'pie'
+  }];
+  
+  return data;
+}
+
 
 const getDetailsColor = (value) => {
   return value > 0 ? 'text-green-500' : value < 0 ? 'text-red-500' : 'text-gray-500';
@@ -132,6 +143,7 @@ const Details = () => {
     change: location.state?.change || 0, // Gunakan state jika tersedia
   });
   const [candlestickChartData, setCandlestickChartData] = useState(null);
+  const [pieChart, setPieChart] = useState(null);
   const [news, setNews] = useState([]);
   const [selectedRange, setSelectedRange] = useState('all');
   const [isExpanded, setIsExpanded] = useState(false);
@@ -152,6 +164,7 @@ const Details = () => {
         const id_comp =  company_data.find(company => symbol == company.stock_symbol).stock_id;
 
         const lastweekDate  = getDateSevenDaysAgo();
+        console.log(id_comp);
         let news_response = await fetch_news_database(lastweekDate,id_comp);
         
         if(news_response.length === 0){
@@ -178,27 +191,6 @@ const Details = () => {
     }
 
     fetchNewsDashboard();
-    
-    // const fetchStockInformation = async () => {
-    //   try {
-    //     let stockData = await fetch_stocks_database();
-    //     const stockInfo = stockData.find(company => symbol === company.stock_symbol);
-    //     setStockInformation(stockInfo);
-  
-    //     const candlestickData = await prepareCandlestickChartData(symbol, stockData, selectedRange);
-    //     setCandlestickChartData(candlestickData);
-    //   } catch (err) {
-    //     console.error('Failed to fetch stock information.', err);
-    //   }
-    // };
-    
-    // if (location.state) {
-    //   SetStockQuotes({
-    //     price: location.state.price,
-    //     change: location.state.change,
-    //   });
-    //   setLoading(false);
-    // }
 
     const fetchStockInformation = async () => {
       try {
@@ -213,11 +205,15 @@ const Details = () => {
           stockData,
           selectedRange
         );
+
+        const pieChartData = await preparePieData(symbol);
+
         setCandlestickChartData(candlestickData);
+        setPieChart(pieChartData);
         setLoading(false); // Set loading to false after data is fetched
       } catch (err) {
         console.error("Failed to fetch stock information.", err);
-        setLoading(false); // Set loading to false even if there's an error
+        setLoading(false); 
       }
     };
 
@@ -373,38 +369,48 @@ const Details = () => {
         )}
         </div>
   
-        {/* Stock Description */}
-        <div className="my-6">
-          <p className="text-2xl font-semibold mb-2">
-            <span>{stockInformation.stock_symbol}</span> / <span>{stockInformation.sector}</span>
-          </p>
+        <div className="flex flex-wrap lg:flex-nowrap gap-6 my-6">
+  {/* Stock Description */}
+  <div className="flex-shrink-0 lg:w-1/3">
+    <p className="text-2xl font-semibold mb-2">
+      <span>{stockInformation.stock_symbol}</span> / <span>{stockInformation.sector}</span>
+    </p>
 
-          <p className="text-lg mt-2">
-            {isExpanded
-              ? stockInformation.description // Show full text
-              : getPreview(stockInformation.description)} {/* Show preview */}
-          </p>        
-          <button
-            className="text-blue-500 underline"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? "Show Less" : "Show More"}
-          </button>
+    <p className="text-lg mt-2">
+      {isExpanded
+        ? stockInformation.description // Show full text
+        : getPreview(stockInformation.description)} {/* Show preview */}
+    </p>
+    <button
+      className="text-blue-500 underline mt-2"
+      onClick={() => setIsExpanded(!isExpanded)}
+    >
+      {isExpanded ? "Show Less" : "Show More"}
+    </button>
+  </div>
+
+  {/* Pie Chart */}
+  <div className="flex-grow">
+    {pieChart && (
+      <div className="relative">
+        <Plot
+          data={pieChart}
+          layout={{
+            title: {
+              text: 'Overall News Sentiments'
+            },
+            autosize: true,
+            responsive: true,
+          }}
+          useResizeHandler={true}
+          style={{ width: '100%', height: 'auto' }}
+        />
       </div>
-  
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 my-6">
-  
-          {/* <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-semibold mb-2">Sentiment Overview</h2>
-            <Pie data={pieChartData} options={pieChartOptions} />
-          </div> */}
-  
-          <div className="grid grid-cols-1 gap-4">
-            <h2 className="text-2xl font-semibold mb-2">Performance Overview</h2>
+    )}
+  </div>
+</div>
 
 
-          </div>
-        </div>
   
         <div className="news px-10">
             <h2 className="text-2xl font-semibold mb-6">Related News</h2>

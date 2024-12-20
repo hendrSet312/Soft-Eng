@@ -11,7 +11,7 @@ export async function fetch_news_database(date, id_comp = null) {
     let responseStr ;
 
     if(id_comp){
-        responseStr = `http://localhost:5000/database/news_stock/${date}?stock_id=${id_comp}`;
+        responseStr = `http://localhost:5000/database/news_stock/${date}?id_company=${id_comp}`;
     }else{
         responseStr = `http://localhost:5000/database/news_stock/${date}`
     }
@@ -29,9 +29,9 @@ export async function fetch_stock_sentiment(title) {
     return response.data.predictions[0];
 }
 
-export async function fetch_stock_sentiment_count() {
+export async function fetch_max_stock_sentiment_count() {
     try {
-      const response = await axios.get('http://localhost:5000/database/sentiment_count');
+      const response = await axios.get('http://localhost:5000/database/max_sentiment_count');
       console.log('Fetched Sentiment Data:', response.data); // Log responsenya
 
       if (!Array.isArray(response.data)) {

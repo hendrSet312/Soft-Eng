@@ -4,7 +4,7 @@ import {getDateSevenDaysAgo,getCurrentDate} from '../../server/misc/date_operati
 import {StockCard, NewsCard, Header, Footer} from '../components';
 import axios from 'axios';
 import { parse_date } from '../../server/misc/date_operation';
-import { fetch_stocks_database, fetch_news_database, fetch_stock_sentiment_count} from '../../server/database/get_public_data';
+import { fetch_stocks_database, fetch_news_database, fetch_max_stock_sentiment_count} from '../../server/database/get_public_data';
 
 
 const DashboardPage = () => {
@@ -87,7 +87,7 @@ const DashboardPage = () => {
     const fetchStockDashboard = async () => {
       try {
         const stocks_li = await fetch_stocks_database();
-        const sentimentResponse = await fetch_stock_sentiment_count();
+        const sentimentResponse = await fetch_max_stock_sentiment_count();
         console.log("Fetched Sentiment Data:", sentimentResponse);
     
         const stockData = await Promise.all(

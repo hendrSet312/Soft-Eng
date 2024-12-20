@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { unix_to_date } from '../../server/misc/date_operation';
 import img_template from '../../src/assets/template_img.news.jpg';
-import {fetch_stock_sentiment,fetch_stock_sentiment_count} from '../../server/database/get_public_data';
+import {fetch_stock_sentiment,fetch_max_stock_sentiment_count} from '../../server/database/get_public_data';
 import { PiCoinsFill } from 'react-icons/pi';
 
 
@@ -18,7 +18,7 @@ export const fetchStockData = async (symbol) => {
     const response = await axios.get(options.path);
     const stockData = response.data[0];
     const {name, price,changesPercentage } = stockData;
-    const sentimentResponse = await fetch_stock_sentiment_count();
+    const sentimentResponse = await fetch_max_stock_sentiment_count();
     const sentimentData = sentimentResponse[symbol] || "neutral";
 
     return {
@@ -44,8 +44,7 @@ export const fetchNewsData = async (symbol, date_start, date_end) => {
 
     const newsWithSentiments = await Promise.all(
       res.map(async ({ id, headline, image, datetime, url }) => {
-        const sentimentArray = await fetch_stock_sentiment(headline);
-        console.log('sentimentArray woiiiiiiiiii', sentimentArray);
+        const sentimentArray = await fetch_max_stock_sentiment_count(headline);
 
         return {
           id: id,

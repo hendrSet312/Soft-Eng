@@ -53,7 +53,7 @@ router.get('/news_stock/:date', async (req, res) => {
                      WHERE ns.published_date >= $1`;
 
         if(id_company){
-            query = query.concat(' AND company_id = $2;');
+            query = query.concat(' AND s.stock_id = $2;');
             result = await client_postgre.query(query,[date,id_company]);
         }else{
             query = query.concat(';');
@@ -135,7 +135,7 @@ router.post('/news_stock', async (req, res) => {
 // });
 
 
-router.get('/sentiment_count', async (req, res) => {
+router.get('/max_sentiment_count', async (req, res) => {
     try {
       const query = `
         WITH SentimentCounts AS (
@@ -177,6 +177,27 @@ router.get('/sentiment_count', async (req, res) => {
   
       const result = await client_postgre.query(query);
       console.log("Sentiment Count Query Result:", result.rows); // Log hasil query
+      res.status(200).json(result.rows);
+    } catch (error) {
+      console.error('Error retrieving sentiment counts:', error);
+      res.status(500).send('An error occurred while fetching sentiment counts.');
+    }
+  });
+  
+
+router.get('/sentiment_count', async (req, res) => {
+    try {
+        const {stock_symbol} = req.query;
+
+        const query = `
+           SELECT ns.sentiment, COUNT(ns.sentiment)
+           FROM public.news_stock as ns
+           JOIN public.stock AS s ON s.stock_id = ns.stock_id
+           WHERE s.stock_symbol = ($1)
+           GROUP BY ns.sentiment 
+        `;
+    
+      const result = await client_postgre.query(query, [stock_symbol]);
       res.status(200).json(result.rows);
     } catch (error) {
       console.error('Error retrieving sentiment counts:', error);
