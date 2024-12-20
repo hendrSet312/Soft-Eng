@@ -4,7 +4,7 @@ import {getDateSevenDaysAgo,getCurrentDate} from '../../server/misc/date_operati
 import {StockCard, NewsCard, Header, Footer} from '../components';
 import axios from 'axios';
 import { parse_date } from '../../server/misc/date_operation';
-import { fetch_stocks_database, fetch_news_database } from '../../server/database/get_public_data';
+import { fetch_stocks_database, fetch_news_database, fetch_stock_sentiment_count} from '../../server/database/get_public_data';
 
 
 const DashboardPage = () => {
@@ -43,21 +43,37 @@ const DashboardPage = () => {
         if(news_response.length === 0){
           const stocks_li = await fetch_stocks_database();
         
+          // Wait for all news data to be fetched
           const news_data = await Promise.all(
-            stocks_li.map(({stock_symbol}) => fetchNewsData(stock_symbol,lastweekDate,currentDate))
+            stocks_li.map(({ stock_symbol }) =>
+              fetchNewsData(stock_symbol, lastweekDate, currentDate)
+            )
           );
 
-          for(const {id,title, symbol, image, datetime,url} of news_data.flat()){
-            const id_comp = stocks_li.find(company => symbol === company.stock_symbol).stock_id;
+          for(const {id,title, symbol, image, datetime,url, sentiment} of news_data.flat()){
+            // const id_comp = stocks_li.find(company => symbol === company.stock_symbol).stock_id;
+            const matchingStock = stocks_li.find(company => symbol === company.stock_symbol);
+            if (!matchingStock) {
+              console.error(`No matching stock found for symbol: ${symbol}`);
+              continue;
+            }
+    
+            const id_comp = matchingStock.stock_id;
 
-            const res = await axios.post('http://localhost:5000/database/news_stock', {
-              id_news : id,
-              id_company :id_comp, 
-              title : title, 
-              published_date : datetime, 
-              image_link : image,
-              url : url
-            });
+            try {
+              const res = await axios.post('http://localhost:5000/database/news_stock', {
+                id_news: id,
+                id_company: id_comp,
+                title: title,
+                published_date: datetime,
+                image_link: image,
+                url: url,
+                sentiment: sentiment,
+              });
+              console.log(`News stored successfully for ${symbol}:`, res.data);
+            } catch (error) {
+              console.error(`Error storing news for symbol ${symbol}:`, error);
+            }
           }
           news_response = await fetch_news_database(currentDate);
         }
@@ -69,18 +85,24 @@ const DashboardPage = () => {
     }
 
     const fetchStockDashboard = async () => {
-      try{
+      try {
         const stocks_li = await fetch_stocks_database();
-
+        const sentimentResponse = await fetch_stock_sentiment_count();
+        console.log("Fetched Sentiment Data:", sentimentResponse);
+    
         const stockData = await Promise.all(
-          stocks_li.map(({stock_symbol}) => fetchStockData(stock_symbol))
+          stocks_li.map(async ({ stock_symbol }) => {
+            const stock = await fetchStockData(stock_symbol);
+            console.log(`Processed Stock Data for ${stock_symbol}:`, stock);
+            return stock;
+          })
         );
-
+    
         setStocks(stockData);
-      }catch(error){
-        console.error('Error fetching dashboard news:', error);
+      } catch (error) {
+        console.error('Error fetching dashboard stock data:', error);
       }
-    }
+    };
 
     fetchNewsDashboard();
     fetchDashboardData();
@@ -91,9 +113,9 @@ const DashboardPage = () => {
     <div>
       <Header />
       <div className="container mx-auto md:p-6 xl:px-0 xl:pt-0">
-        <section className="welcome text-center mb-12 bg-slate-400 p-6">
-          <h2 className="text-4xl font-bold mb-4">Welcome, {userData.firstName ? userData.firstName : "Pencari Cuan!"}</h2>
-          <p className="text-lg text-gray-600">Gather Stock Information Here</p>
+        <section className="welcome text-center mb-12 bg-green-600 p-6">
+          <h2 className="text-4xl font-bold mb-4 text-white">Welcome, {userData.firstName ? userData.firstName : "Pencari Cuan!"}</h2>
+          <p className="text-lg text-white">Gather Stock Information Here</p>
         </section>
 
         <section className="stock-sentiments mb-12 px-10">
@@ -105,7 +127,7 @@ const DashboardPage = () => {
                 name={stock.name}
                 price={stock.price}
                 change={stock.changesPercentage}
-                /* Symbol buat stockcard cuy, gatau gmn*/
+                sentiment={stock.sentiment}
                 symbol={stock.symbol} // Pass symbol to StockCard
               />
           ))}
@@ -123,6 +145,7 @@ const DashboardPage = () => {
                 title={newsItem.title}
                 stockSymbol={newsItem.stock_symbol}
                 date = {parse_date(newsItem.published_date)}
+                sentiment = {newsItem.sentiment}
               />
             ))}
           </div>

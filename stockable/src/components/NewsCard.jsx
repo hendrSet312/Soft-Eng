@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const NewsCard = ({ image, title, stockSymbol, date, url }) => {
+const NewsCard = ({ image, title, stockSymbol, date, url, sentiment }) => {
   return (
     <Link 
       to={url} 
@@ -11,6 +11,9 @@ const NewsCard = ({ image, title, stockSymbol, date, url }) => {
       <h3 className="text-lg font-bold mb-2">{title}</h3>
       <p className="text-gray-800 text-sm mb-1">Stock: {stockSymbol}</p>
       <p className="text-gray-700 text-xs">{date}</p>
+      <p className={`text-xs text-${sentiment === 'positive' ? 'green' : sentiment === 'neutral' ? 'gray' : 'red'}-500`}>
+        {sentiment}
+      </p>
     </Link>
   );
 };

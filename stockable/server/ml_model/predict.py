@@ -6,6 +6,7 @@ from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet
 import re
 import string
+from flask_cors import CORS
 
 # Download required NLTK resources
 nltk.download('punkt')
@@ -45,6 +46,12 @@ model = joblib.load(MODEL_PATH)
 
 # Initialize the Flask app
 app = Flask(__name__)
+CORS(app, resources={r"/predict": {"origins": "http://localhost:5173"}}) #Restrict CORS to /predict route
+
+# or for all routes
+# CORS(app, origins="http://localhost:5173")
+
+
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -78,4 +85,4 @@ def predict():
 
 # Run the app
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5123)

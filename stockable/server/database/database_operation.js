@@ -69,19 +69,19 @@ router.get('/news_stock/:date', async (req, res) => {
 
 router.post('/news_stock', async (req, res) => {
     try {
-        const {id_news,id_company, title, published_date, image_link, url } = req.body;
+        const {id_news,id_company, title, published_date, image_link, url, sentiment } = req.body;
 
         if (!id_news || !id_company || !title || !published_date || !image_link) {
             return res.status(400).send('All fields are required: id_news ,id_company, title, publisher, published_date, image_link, url.');
         }
 
         const query = `
-            INSERT INTO public.news_stock (id_news,stock_id, title, published_date, image_link, url)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO public.news_stock (id_news,stock_id, title, published_date, image_link, url, sentiment)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             ON CONFLICT DO NOTHING;
         `;
 
-        const values = [id_news,id_company, title, published_date, image_link, url];
+        const values = [id_news,id_company, title, published_date, image_link, url, sentiment];
 
         const result = await client_postgre.query(query, values);
 
@@ -93,5 +93,97 @@ router.post('/news_stock', async (req, res) => {
         res.status(500).send('An error occurred while adding the news stock.');
     }
 });
+
+// router.get('/sentiment_count', async (req, res) => {
+//     try {
+//         const query = `
+//             SELECT 
+//                 s.stock_symbol, 
+//                 ns.sentiment, 
+//                 COUNT(ns.sentiment) AS sentiment_count
+//             FROM 
+//                 public.news_stock AS ns
+//             JOIN 
+//                 public.stock AS s 
+//                 ON s.stock_id = ns.stock_id
+//             GROUP BY 
+//                 s.stock_symbol, ns.sentiment
+//             HAVING 
+//                 COUNT(ns.sentiment) = (
+//                     SELECT MAX(COUNT(inner_ns.sentiment))
+//                     FROM public.news_stock AS inner_ns
+//                     WHERE inner_ns.stock_id = ns.stock_id
+//                     GROUP BY inner_ns.sentiment
+//                 )
+//             ORDER BY 
+//                 s.stock_symbol;
+//         `;
+
+//         const result = await client_postgre.query(query);
+
+//         // Reduce result into a simple structure
+//         const sentimentCounts = result.rows.reduce((acc, row) => {
+//             acc[row.stock_symbol] = row.sentiment; // Store highest sentiment
+//             return acc;
+//         }, {});
+
+//         res.status(200).json(sentimentCounts);
+//     } catch (error) {
+//         console.error('Error retrieving sentiment counts:', error);
+//         res.status(500).send('An error occurred while fetching sentiment counts.');
+//     }
+// });
+
+
+router.get('/sentiment_count', async (req, res) => {
+    try {
+      const query = `
+        WITH SentimentCounts AS (
+            SELECT 
+                s.stock_symbol, 
+                ns.sentiment, 
+                COUNT(ns.sentiment) AS sentiment_count
+            FROM 
+                public.news_stock AS ns
+            JOIN 
+                public.stock AS s 
+                ON s.stock_id = ns.stock_id
+            GROUP BY 
+                s.stock_symbol, ns.sentiment
+        ),
+        MaxSentiment AS (
+            SELECT 
+                stock_symbol, 
+                MAX(sentiment_count) AS max_count
+            FROM 
+                SentimentCounts
+            GROUP BY 
+                stock_symbol
+        )
+        SELECT 
+            sc.stock_symbol, 
+            sc.sentiment, 
+            sc.sentiment_count
+        FROM 
+            SentimentCounts sc
+        JOIN 
+            MaxSentiment ms
+        ON 
+            sc.stock_symbol = ms.stock_symbol 
+            AND sc.sentiment_count = ms.max_count
+        ORDER BY 
+            sc.stock_symbol;
+      `;
+  
+      const result = await client_postgre.query(query);
+      console.log("Sentiment Count Query Result:", result.rows); // Log hasil query
+      res.status(200).json(result.rows);
+    } catch (error) {
+      console.error('Error retrieving sentiment counts:', error);
+      res.status(500).send('An error occurred while fetching sentiment counts.');
+    }
+  });
+  
+  
 
 module.exports = router;
